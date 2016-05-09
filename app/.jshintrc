@@ -1,0 +1,11 @@
+{
+  "strict" : "global",
+  "latedef": false,
+  "globals" : {
+    "require": false,
+    "window": false,
+    "console" : false,
+    "eventData" : false,
+    "module" : false
+  }
+}
