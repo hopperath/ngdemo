@@ -3,15 +3,21 @@
 var EditEventController = require('./controllers/EditEventController');
 var EventController = require('./controllers/EventController');
 var EventData = require('./services/EventData');
-var CacheSampleController = require('./services/CacheSampleController');
 
 var angular = require('angular');
 angular
-  .module('eventsApp', [require('angular-resource')])
-  .factory('eventData',EventData)
-  .controller('EditEventController',EditEventController)
-  .controller('CacheSampleController',CacheSampleController)
-  .controller('EventController',EventController);
+  .module('eventsApp', [require('angular-resource'), require('angular-route')])
+  .config(function($routeProvider)
+  {
+    $routeProvider.when('/newEvent',
+    {
+      templateUrl: 'templates/NewEvent.html',
+      controller: 'EditEventController'
+    });
+  })
+  .factory('eventData', EventData)
+  .controller('EditEventController', EditEventController)
+  .controller('EventController', EventController);
 
 
 
