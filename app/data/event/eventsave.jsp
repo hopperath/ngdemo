@@ -2,7 +2,7 @@
 <%@page import="java.nio.file.*"%>
 <%@page import="java.util.stream.Collectors"%>
 <%@page import="java.util.*"%>
-<%@page import="org.json.JSONObject"%>
+<%@page import="org.json.*"%>
 <%@page import="java.io.IOException"%>
 <%@page import="java.util.stream.*"%>
 <%
@@ -15,31 +15,42 @@ JSONObject json = new JSONObject(output);
 out.println(output);
 
 int id = json.getInt("id");
-out.println("id="+id);
+//out.println("context:"+request.getContextPath());
+//out.println("servet:"+request.getServletPath());
+//out.println("real:"+request.getRealPath(request.getServletPath()));
+
+//out.println("parent:"+path.getParent());
 
 if (id<0)
 {
     try
     {
-        List<String> files = Files.walk(Paths.get("/Users/v409647/webapps/ngdemo/app/data/event"))
+        File path = new File(request.getRealPath(request.getServletPath()));
+        Path walkPath = Paths.get(path.getParent());
+
+
+        PathMatcher jsonFilter =  walkPath.getFileSystem().getPathMatcher("regex:.+[\\d]+\\.json");
+        List<String> files = Files.walk(walkPath)
                                 .filter(Files::isRegularFile)
+                                .filter(jsonFilter::matches)
                                 .map(Path::toFile)
                                 .map(File::getName)
                                 .collect(Collectors.toCollection(ArrayList::new));
 
-        out.println(files);
-        out.println(request.getServletPath());
-        out.println(request.getRealPath(request.getServletPath()));
+
+        List<String> numbers = files.stream().map( k->k.substring(0,k.indexOf('.'))).collect(Collectors.toList());
+        Integer nextnum = files.stream().map( k->Integer.parseInt(k.substring(0,k.indexOf('.')))).max(Integer::compare).get()+1;
+
+
+        json.put("id",nextnum);
+
+        File myFile = new File(String.format("./webapps/%s/app/data/event/%d.json",request.getContextPath(),nextnum));
+        Writer writer = new BufferedWriter(new FileWriter(myFile));
+        writer.write(json.toString(3));
+        writer.close();
+        out.println(String.format("{\"id\":%d}",nextnum));
     }
     catch (IOException e) {e.printStackTrace();}
-    /*
-    List<File> files = Files.walk(Paths.get("."))
-                            .filter(Files::isRegularFile)
-                            .map(Path::toFile)
-                            .collect(Collectors.toList());
-                            */
-
-    //out.println(files);
 }
 /*
 File myFile = new File(String.format("./webapps/%s/app/data/event/%d.json",request.getContextPath(),id));
