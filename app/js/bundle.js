@@ -121,7 +121,6 @@ module.exports = function EventData($http)
 
       save: function(event)
       {
-          event.id=999;
           return $http.post('data/event/eventsave.jsp',event);
       }
     };

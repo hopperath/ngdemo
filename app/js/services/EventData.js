@@ -26,6 +26,5 @@ module.exports = function EventData($http)
       {
           return $http.post('data/event/eventsave.jsp',event);
       }
-
     };
 };

@@ -5,6 +5,7 @@
 <%@page import="org.json.*"%>
 <%@page import="java.io.IOException"%>
 <%@page import="java.util.stream.*"%>
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
 //File creation
 
@@ -12,9 +13,16 @@ String output = (String) request.getReader().lines().collect(Collectors.joining(
 
 JSONObject json = new JSONObject(output);
 
-out.println(output);
+//out.println(output);
 
-int id = json.getInt("id");
+int id=-1;
+
+try
+{
+    id = json.getInt("id");
+}
+catch (JSONException e) { }
+
 //out.println("context:"+request.getContextPath());
 //out.println("servet:"+request.getServletPath());
 //out.println("real:"+request.getRealPath(request.getServletPath()));
@@ -42,16 +50,21 @@ if (id<0)
         Integer nextnum = files.stream().map( k->Integer.parseInt(k.substring(0,k.indexOf('.')))).max(Integer::compare).get()+1;
 
 
-        json.put("id",nextnum);
+        id=nextnum;
+        json.put("id",id);
 
-        File myFile = new File(String.format("./webapps/%s/app/data/event/%d.json",request.getContextPath(),nextnum));
-        Writer writer = new BufferedWriter(new FileWriter(myFile));
-        writer.write(json.toString(3));
-        writer.close();
-        out.println(String.format("{\"id\":%d}",nextnum));
     }
     catch (IOException e) {e.printStackTrace();}
 }
+
+File myFile = new File(String.format("./webapps/%s/app/data/event/%d.json",request.getContextPath(),id));
+Writer writer = new BufferedWriter(new FileWriter(myFile));
+writer.write(json.toString(3));
+writer.close();
+out.println(String.format("{\"id\":%d}",id));
+
+
+
 /*
 File myFile = new File(String.format("./webapps/%s/app/data/event/%d.json",request.getContextPath(),id));
 Writer writer = new BufferedWriter(new FileWriter(myFile));
