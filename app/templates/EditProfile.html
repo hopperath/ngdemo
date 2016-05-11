@@ -1,0 +1,25 @@
+<div style="padding-left:20px; padding-right: 20px">
+   <div class="container">
+      <h1>Edit Profile</h1>
+       <hr/>
+       <form name="editProfileForm">
+           <fieldset>
+               <label for="userId">UserId:</label>
+               <input id="userId" type="text" required ng-model="profile.id" placeholder="User Id"/>
+               <label for="First Name">First Name:</label>
+               <input id="firstName" type="text" required ng-model="profile.first_name" placeholder="First Name"/>
+               <label for="Last Name">Last Name:</label>
+               <input id="lastName" type="text" required ng-model="profile.last_name" placeholder="Last Name"/>
+               <label for="profileLocation">Event Location:</label>
+               <input id="profileLocation" type="text" ng-model="profile.location.address" placeholder="Address of user..."/>
+               <br/>
+               <input id="profileCity" type="text" ng-model="profile.location.city" class="input-small" placeholder="City..."/>
+               <input id="profileProvince" type="text" ng-model="profile.location.province" class="input-small" placeholder="Province..."/>
+           </fieldset>
+           <br/>
+           <br/>
+           <button type="submit" ng-disabled="editProfileForm.$invalid" ng-click="saveProfile(profile,editProfileForm)" class="btn btn-primary">Save</button>
+           <button type="button" ng-click="cancelEdit()" class="btn btn-default">Cancel</button>
+       </form>
+   </div>
+</div>

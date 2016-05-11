@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports =  function EditEventController($scope,eventData)
+module.exports =  function EditEventController($scope,eventData,$window)
 {
     $scope.saveEvent = function(event, newEventForm)
     {
@@ -14,12 +14,12 @@ module.exports =  function EditEventController($scope,eventData)
         }
         else
         {
-
+            $window.alert("Form invalid");
         }
     };
 
     $scope.cancelEdit = function()
     {
-      window.location = "EventDetails.html";
+      $window.location = "index.html";
     };
 };

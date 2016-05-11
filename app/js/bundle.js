@@ -2,12 +2,21 @@
 'use strict';
 
 var EditEventController = require('./controllers/EditEventController');
-var EventController = require('./controllers/EventController');
+var EditProfileController = require('./controllers/EditProfileController');
+var EventDetailsController = require('./controllers/EventDetailsController');
+var EventListController = require('./controllers/EventListController');
 var EventData = require('./services/EventData');
+var ProfileData = require('./services/ProfileData');
+var SampleDirectiveController = require('./controllers/SampleDirectiveController');
+var SampleDirective = require('./directives.js');
 
 var angular = require('angular');
+
+
+
+
 angular
-  .module('eventsApp', [require('angular-resource'), require('angular-route')])
+  .module('eventsApp', [require('angular-resource'), require('angular-route') ])
   .config(function($routeProvider)
   {
     $routeProvider.when('/newEvent',
@@ -15,20 +24,52 @@ angular
       templateUrl: 'templates/NewEvent.html',
       controller: 'EditEventController'
     });
+
+    $routeProvider.when('/editProfile',
+    {
+      templateUrl: 'templates/EditProfile.html',
+      controller: 'EditProfileController'
+    });
+
+    $routeProvider.when('/events',
+    {
+      templateUrl: 'templates/EventList.html',
+      controller: 'EventListController'
+    });
+
+    $routeProvider.when('/sampleDirective',
+    {
+      templateUrl: 'templates/SampleDirective.html',
+      controller: 'SampleDirectiveController'
+    });
+
+    $routeProvider.when('/event/:eventId',
+    {
+      templateUrl: 'templates/EventDetails.html',
+      controller: 'EventDetailsController',
+      resolve:
+      {
+          response: function($route, eventData) {
+              return eventData.getEvent($route.current.pathParams.eventId);
+          }
+      }
+    });
+
+    $routeProvider.otherwise({redirectTo: 'events'});
   })
   .factory('eventData', EventData)
+  .factory('profileData', ProfileData)
+  .directive('mySample',SampleDirective)
+  .controller('SampleDirectiveController', SampleDirectiveController)
   .controller('EditEventController', EditEventController)
-  .controller('EventController', EventController);
+  .controller('EventListController', EventListController)
+  .controller('EditProfileController', EditProfileController)
+  .controller('EventDetailsController', EventDetailsController);
 
-
-
-//require('./services/EventData');
-//require('./controllers/EventController');
-
-},{"./controllers/EditEventController":2,"./controllers/EventController":3,"./services/EventData":4,"angular":10,"angular-resource":6,"angular-route":8}],2:[function(require,module,exports){
+},{"./controllers/EditEventController":2,"./controllers/EditProfileController":3,"./controllers/EventDetailsController":4,"./controllers/EventListController":5,"./controllers/SampleDirectiveController":6,"./directives.js":7,"./services/EventData":8,"./services/ProfileData":9,"angular":15,"angular-resource":11,"angular-route":13}],2:[function(require,module,exports){
 'use strict';
 
-module.exports =  function EditEventController($scope,eventData)
+module.exports =  function EditEventController($scope,eventData,$window)
 {
     $scope.saveEvent = function(event, newEventForm)
     {
@@ -42,41 +83,58 @@ module.exports =  function EditEventController($scope,eventData)
         }
         else
         {
-
+            $window.alert("Form invalid");
         }
     };
 
     $scope.cancelEdit = function()
     {
-      window.location = "EventDetails.html";
+      $window.location = "index.html";
     };
 };
 
 },{}],3:[function(require,module,exports){
 'use strict';
-module.exports = function EventController ($scope ,$log, $anchorScroll, eventData)
+
+module.exports = function EditProfileController($scope,$window,profileData) {
+
+    $scope.saveProfile = function(profile, editProfileForm) {
+
+        if (editProfileForm.$valid)
+        {
+            profileData.save(profile)
+              .then(function(response) {console.log('success',response);})
+              .catch(function(response) {console.log('failure',response);});
+        }
+        else
+        {
+            $window.alert("Form Invalid");
+        }
+    };
+
+    $scope.cancelEdit = function()
+    {
+      $window.location = "index.html";
+    };
+};
+
+},{}],4:[function(require,module,exports){
+'use strict';
+module.exports = function EventDetailsController ($scope ,$log, $route)
 {
 
   $scope.sortorder = 'name';
-  eventData.getEvent()
-      //.success( function(event) { $scope.event = event; })
-      //.error ( function(data,status,headers,config) {$log.warn(data,status,headers,config); });
+  $log.info($route.current.locals.response.data);
+  $scope.event = $route.current.locals.response.data;
+  /*
+  eventData.getEvent($routeParams.eventId)
       .then( function(response)
       {
           $scope.event = response.data;
           $log.info("then callback");
           $log.info(response);
       });
-      /*
-      .success( function(myevent)
-      {
-          $scope.event = myevent;
-          $log.info("success callback");
-          $log.info(myevent);
-      });
       */
-//      .catch ( function(data,status,headers,config) {$log.warn(data,status,headers,config); });
-
 
   $scope.upVoteSession = function(session)
   {
@@ -88,45 +146,87 @@ module.exports = function EventController ($scope ,$log, $anchorScroll, eventDat
     session.upVoteCount--;
   };
 
-  $scope.scrollToSession = function()
-  {
-      $anchorScroll();
-  };
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+'use strict';
+
+module.exports = function EventListController($scope, $log, eventData)
+{
+
+    //$scope.events = [ {name:"one", time:"01JAN89"}, {name:"two", time:"31DEC99"}];
+    //$log.info($scope.events);
+    eventData.getAllEvents()
+             .then(function(response)
+              {
+                  //console.log('success',response);
+                  $scope.events = response.data;
+                  $log.info($scope.events);
+                  //$log.info(response.data);
+              })
+              .catch(function(response)
+              {
+                  console.log('failure',response);
+              });
+};
+
+},{}],6:[function(require,module,exports){
+'use strict';
+module.exports = function SampleDirectiveController()
+{
+
+};
+
+},{}],7:[function(require,module,exports){
+'use strict';
+module.exports = function SampleDirective($compile)
+{
+    return {
+        template: "<input type='text' ng-model='sampleData'/> {{sampleData}}<br/>"
+    };
+
+};
+
+},{}],8:[function(require,module,exports){
 'use strict';
 module.exports = function EventData($http)
 {
-  /*
-    var resource = $resource('data/event/:id.json', {id: '@id'});
     return {
-        getEvent: function()
-        {
-            return resource.get({id:1});
-        },
-        save: function(event)
-        {
-            event.id = 999;
-            return resource.save(event);
-        }
-    };
-    */
-
-    return {
-      getEvent: function()
+      getEvent: function(eventId)
       {
-          return $http.get('data/event/1.json');
+          return $http.get('data/event/'+eventId+".json");
       },
 
       save: function(event)
       {
           return $http.post('data/event/eventsave.jsp',event);
+      },
+
+      getAllEvents: function()
+      {
+          return $http.get('data/event/getevents.jsp');
       }
     };
 };
 
-},{}],5:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+'use strict';
+module.exports = function ProfileData($http)
+{
+    return {
+      getProfile: function(id)
+      {
+          return $http.get('data/profile/'+id+'.json');
+      },
+
+      save: function(profile)
+      {
+          return $http.post('data/profile/profilesave.jsp',profile);
+      }
+    };
+};
+
+},{}],10:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.10
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -822,11 +922,11 @@ angular.module('ngResource', ['ng']).
 
 })(window, window.angular);
 
-},{}],6:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 require('./angular-resource');
 module.exports = 'ngResource';
 
-},{"./angular-resource":5}],7:[function(require,module,exports){
+},{"./angular-resource":10}],12:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.10
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -1827,11 +1927,11 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
 })(window, window.angular);
 
-},{}],8:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 require('./angular-route');
 module.exports = 'ngRoute';
 
-},{"./angular-route":7}],9:[function(require,module,exports){
+},{"./angular-route":12}],14:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.10
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -31651,8 +31751,8 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],10:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":9}]},{},[1]);
+},{"./angular":14}]},{},[1]);

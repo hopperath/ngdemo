@@ -6,6 +6,7 @@
     "window": false,
     "console" : false,
     "eventData" : false,
-    "module" : false
+    "module" : false,
+    "angular" : false
   }
 }
